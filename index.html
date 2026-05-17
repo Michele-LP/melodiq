@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MelodiQ — Quiz Musicale</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  YOUTUBE PLAYER (nascosto)                                          -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="yt-player"></div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  GLOBAL ERROR TOAST                                                 -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="global-error"></div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCREEN: HOME                                                       -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="logo">MelodiQ</div>
+    <p class="subtitle">Il quiz musicale per veri intenditori</p>
+
+    <div class="home-actions">
+      <button class="btn-primary" id="btn-create">🎤 Crea Partita</button>
+
+      <div style="text-align:center; color:var(--text-dim); font-size:0.85rem; text-transform:uppercase; letter-spacing:0.2em;">
+        oppure
+      </div>
+
+      <div class="join-row">
+        <input type="text" id="input-code" placeholder="CODICE" maxlength="6"
+               style="text-transform: uppercase;" autocomplete="off">
+        <button class="btn-primary" id="btn-join">Entra</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCREEN: SETUP (solo host)                                          -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-setup" class="screen">
+    <h2 style="font-size:1.3rem; color:var(--neon-cyan); margin-bottom:1.5rem;">⚙️ Configura Partita</h2>
+
+    <div class="setup-container">
+
+      <!-- Playlist -->
+      <div class="setup-section">
+        <h3>📋 Playlist YouTube</h3>
+        <div style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+          <input type="url" id="input-playlist" placeholder="https://www.youtube.com/playlist?list=...">
+          <button class="btn-secondary" id="btn-validate">Carica</button>
+        </div>
+        <div id="playlist-status" class="status-msg" style="min-height:1rem;"></div>
+        <div id="playlist-progress"></div>
+      </div>
+
+      <!-- Secondi di ascolto -->
+      <div class="setup-section">
+        <h3>⏱️ Secondi di ascolto</h3>
+        <div class="slider-row">
+          <input type="range" id="slider-seconds" min="1" max="15" value="3" step="1">
+          <span class="slider-value" id="slider-value">3s</span>
+        </div>
+      </div>
+
+      <!-- Modalità -->
+      <div class="setup-section">
+        <h3>🎯 Punto di inizio</h3>
+        <div class="mode-btns">
+          <button class="btn-secondary selected" id="btn-mode-start">🎬 Dal principio</button>
+          <button class="btn-secondary" id="btn-mode-random">🎲 Random</button>
+        </div>
+      </div>
+
+      <!-- Numero canzoni -->
+      <div class="setup-section">
+        <h3>🎵 Numero di brani</h3>
+        <div class="count-btns" id="song-count-btns">
+          <button class="btn-secondary selected" data-count="10">10</button>
+          <button class="btn-secondary" data-count="15">15</button>
+          <button class="btn-secondary" data-count="20">20</button>
+          <button class="btn-secondary" data-count="0">Tutte</button>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="btn-create-lobby" disabled>
+        🚀 Crea Lobby
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCREEN: LOBBY                                                      -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-lobby" class="screen">
+    <h2 style="font-size:1rem; color:var(--text-secondary); margin-bottom:0.5rem; letter-spacing:0.15em; text-transform:uppercase;">
+      Codice stanza
+    </h2>
+
+    <div class="lobby-container">
+      <div class="room-code-display" id="lobby-code" onclick="navigator.clipboard.writeText(this.textContent).then(()=>{this.style.borderColor='var(--neon-green)'; setTimeout(()=>this.style.borderColor='',1000);})">
+        —
+      </div>
+
+      <div class="lobby-nick-row">
+        <input type="text" id="input-nickname" placeholder="Il tuo nome" maxlength="16" autocomplete="off">
+        <button class="btn-primary btn-ready" id="btn-ready">Pronto?</button>
+      </div>
+
+      <div class="player-list" id="player-list"></div>
+
+      <div id="lobby-host-controls">
+        <button class="btn-primary" id="btn-start-game" disabled style="width:100%;">
+          In attesa dei giocatori...
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCREEN: GAME                                                       -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="game-layout">
+
+      <div class="game-header">
+        <span id="round-counter">Round 0/0</span>
+        <span id="timer-text"></span>
+      </div>
+
+      <div class="timer-container">
+        <div id="timer-bar"></div>
+      </div>
+
+      <!-- Visualizer -->
+      <div id="visualizer"></div>
+
+      <!-- Countdown -->
+      <div class="countdown-display" id="countdown-display"></div>
+
+      <!-- Options -->
+      <div id="options-grid"></div>
+
+      <!-- Status -->
+      <div class="game-status" id="game-status"></div>
+
+      <!-- Sidebar risultati round -->
+      <div id="round-sidebar"></div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCREEN: RESULTS                                                    -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <div id="screen-results" class="screen">
+    <div class="logo" style="font-size:2rem; margin-bottom:1rem;">🏆 Risultati</div>
+    <div id="results-content"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <!--  SCRIPTS                                                            -->
+  <!-- ════════════════════════════════════════════════════════════════════ -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/youtube.js"></script>
+  <script src="js/net.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
